@@ -1,0 +1,210 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum levelOfStudy {
+  LEVEL_100
+  LEVEL_200
+  LEVEL_300
+  LEVEL_400
+  LEVEL_500
+  LEVEL_600
+}
+
+enum gender {
+  Male
+  Female
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  firstname     String
+  lastname      String
+  username      String    @unique
+  gender        gender
+  email         String    @unique
+  password      String
+  emailVerified DateTime?
+  image         String?
+  coverImage    String?
+  bio           String?
+  school        String?
+  faculty       String?
+  levelOfStudy  String?
+  department    String?
+  onBoard       Boolean?
+  role          UserRole  @default(USER)
+
+  interests UserInterest[]
+
+  sentRequests     Friendship[] @relation("FriendshipRequests")
+  receivedRequests Friendship[] @relation("FriendshipResponses")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  conversationIds String[]       @db.ObjectId
+  conversations   Conversation[] @relation(fields: [conversationIds], references: [id])
+
+  seenMessageIds String[]  @db.ObjectId
+  seenMessages   Message[] @relation("Seen", fields: [seenMessageIds], references: [id])
+
+  messages Message[]
+  posts    Post[]
+  comments Comment[]
+  likes    Like[]
+  shares   Share[]
+}
+
+model Interest {
+  id    String         @id @default(auto()) @map("_id") @db.ObjectId
+  name  String         @unique
+  users UserInterest[]
+}
+
+model UserInterest {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  interestId String   @db.ObjectId
+  interest   Interest @relation(fields: [interestId], references: [id])
+
+  @@unique([userId, interestId])
+}
+
+model Friendship {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  requester   User             @relation("FriendshipRequests", fields: [requesterId], references: [id])
+  requesterId String           @db.ObjectId
+  addressee   User             @relation("FriendshipResponses", fields: [addresseeId], references: [id])
+  addresseeId String           @db.ObjectId
+  status      FriendshipStatus @default(PENDING)
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  BLOCKED
+}
+
+model Post {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+
+  commetIds String[]  @db.ObjectId
+  comments  Comment[]
+
+  likeIds String[] @db.ObjectId
+  likes   Like[]
+
+  shareIds String[] @db.ObjectId
+  shares   Share[]
+}
+
+model Comment {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  isTop     Boolean
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  userId    String    @db.ObjectId
+  user      User      @relation(fields: [userId], references: [id])
+  postId    String    @db.ObjectId
+  post      Post      @relation(fields: [postId], references: [id])
+  parentId  String?   @db.ObjectId // New field for reply functionality
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies   Comment[] @relation("CommentReplies")
+}
+
+//TODO remember to delete all replies after deleting a comment
+
+model Like {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  postId    String   @db.ObjectId
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Share {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  postId    String   @db.ObjectId
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model VerificationToken {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model Conversation {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt     DateTime @default(now())
+  lastMessageAt DateTime @default(now())
+  name          String?
+  isGroup       Boolean?
+
+  messagesIds String[]  @db.ObjectId
+  messages    Message[]
+
+  userIds String[] @db.ObjectId
+  users   User[]   @relation(fields: [userIds], references: [id])
+}
+
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  body      String?
+  image     String?
+  createdAt DateTime @default(now())
+
+  seenIds String[] @db.ObjectId
+  seen    User[]   @relation("Seen", fields: [seenIds], references: [id])
+
+  conversationId String       @db.ObjectId
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String @db.ObjectId
+  sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
