@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { Chess, Square } from "chess.js";
 
@@ -65,40 +64,59 @@ const ChessGame: React.FC = () => {
   }
 
   const handleSquareClick = (index: number) => {
-    // Don't allow moves after checkmate or draw
-    if (chess.isCheckmate() || chess.isDraw()) {
-      return;
-    }
-
     const square: Square = (["a", "b", "c", "d", "e", "f", "g", "h"][
       index % 8
     ] +
       (8 - Math.floor(index / 8))) as Square;
-
     const piece = chess.get(square);
+
+    // If the game is over, don't allow any more moves
+    if (chess.isGameOver()) {
+      setStatus("Game over. Start a new game to continue playing.");
+      return;
+    }
 
     // If no piece is selected and a piece exists on the clicked square
     if (selectedSquare === null) {
       // Ensure the player selects their own piece
       if (piece && piece.color === chess.turn()) {
         setSelectedSquare(square);
+        setStatus(
+          `Selected ${
+            piece.color === "w" ? "White" : "Black"
+          } ${piece.type.toUpperCase()}. Choose a destination.`
+        );
+      } else {
+        setStatus(
+          `It's ${chess.turn() === "w" ? "White" : "Black"}'s turn. Select a ${
+            chess.turn() === "w" ? "White" : "Black"
+          } piece.`
+        );
       }
     } else {
       // Attempt the move
-      const move = chess.move({
-        from: selectedSquare,
-        to: square,
-        promotion: "q", // always promote to queen for simplicity
-      });
+      try {
+        const move = chess.move({
+          from: selectedSquare,
+          to: square,
+          promotion: "q", // always promote to queen (we might allow the players to choose later in development)
+        });
 
-      if (move) {
-        // Valid move
-        setBoard(getInitialBoard());
-        updateStatus();
-        setSelectedSquare(null); // Reset after a valid move
-      } else {
-        // Invalid move: keep the selected piece active and show a message
-        setStatus("Invalid move, try again!");
+        if (move) {
+          // Valid move
+          setBoard(getInitialBoard());
+          updateStatus();
+          setSelectedSquare(null); // Reset after a valid move
+        } else {
+          // Invalid move: keep the selected piece active and show a message
+          setStatus("Invalid move. Try again or select a different piece.");
+          setSelectedSquare(null); // Reset selected square to allow new selection
+        }
+      } catch (error) {
+        // Handle any unexpected errors
+        console.error("An error occurred while making the move:", error);
+        setStatus("An error occurred. Please try again.");
+        setSelectedSquare(null); // Reset selected square to allow new selection
       }
     }
   };
