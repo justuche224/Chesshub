@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { Chess, Square } from "chess.js";
 import { ArrowLeft, Hand, Flag, MessageSquare } from "lucide-react";
 import { Player } from "@/app/game/page";
 import Image from "next/image";
+import { saveCapturedPieces, saveGame } from "@/lib/saveGame";
+import { loadGame } from "@/lib/loadGame";
 
 type ChessPiece =
   | "r"
@@ -21,24 +23,27 @@ type ChessPiece =
   | "P"
   | "";
 
+export type CapturedPieces = {
+  white: ChessPiece[];
+  black: ChessPiece[];
+};
+
 type PieceMap = {
   [key in Exclude<ChessPiece, "">]: string;
 };
 
-const ChessMobileGame: React.FC<{ white: Player; black: Player }> = ({
-  white,
-  black,
-}) => {
-  const [players, setPlayers] = useState({ white, black });
+const ChessGame: React.FC<{
+  gameId?: string;
+  white: Player;
+  black: Player;
+}> = ({ gameId = "671035153d19b1dab00fe4a0", white, black }) => {
   const [chess] = useState<Chess>(new Chess());
   const [board, setBoard] = useState<ChessPiece[]>(getInitialBoard());
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [availableMoves, setAvailableMoves] = useState<string[]>([]);
   const [status, setStatus] = useState<string>("");
-  const [capturedPieces, setCapturedPieces] = useState<{
-    white: ChessPiece[];
-    black: ChessPiece[];
-  }>({
+  const [gameLoading, setGameLoading] = useState(true);
+  const [capturedPieces, setCapturedPieces] = useState<CapturedPieces>({
     white: [],
     black: [],
   });
@@ -72,6 +77,34 @@ const ChessMobileGame: React.FC<{ white: Player; black: Player }> = ({
     return () => clearInterval(interval);
   }, [chess]);
 
+  const loadGameState = async (id: string) => {
+    const loadedGame = await loadGame(id);
+    if (loadedGame) {
+      chess.load(loadedGame.fen);
+      setBoard(getInitialBoard());
+      setMoveHistory(loadedGame.moveHistory);
+      console.log(loadedGame.capturedPieces);
+
+      const parsedCapturedPieces: { white: ChessPiece[]; black: ChessPiece[] } =
+        {
+          white: loadedGame.capturedPieces.white as ChessPiece[],
+          black: loadedGame.capturedPieces.black as ChessPiece[],
+        };
+      setCapturedPieces(parsedCapturedPieces);
+
+      setStatus(loadedGame.status);
+      updateStatus();
+    }
+  };
+
+  useEffect(() => {
+    if (gameId) {
+      setGameLoading(true);
+      loadGameState(gameId);
+      setGameLoading(false);
+    }
+  }, [gameId]);
+
   function getInitialBoard(): ChessPiece[] {
     return chess
       .board()
@@ -97,7 +130,7 @@ const ChessMobileGame: React.FC<{ white: Player; black: Player }> = ({
       .map((move) => move.to);
   };
 
-  const handleSquareClick = (index: number) => {
+  const handleSquareClick = async (index: number) => {
     const square = (["a", "b", "c", "d", "e", "f", "g", "h"][index % 8] +
       (8 - Math.floor(index / 8))) as Square;
     const piece = chess.get(square);
@@ -149,12 +182,21 @@ const ChessMobileGame: React.FC<{ white: Player; black: Player }> = ({
               ],
             }));
           }
-
           setPreviousMove({
             from: move.from as Square,
             to: move.to as Square,
           });
           setMoveHistory((prev) => [...prev, chess.history().slice(-1)[0]]);
+          const gameData = {
+            id: gameId,
+            fen: chess.fen(),
+            moveHistory,
+            // capturedPieces,
+            status: "ongoing",
+          };
+
+          const savedGame = await saveGame(gameData);
+          // console.log(capturedPieces);
         } else {
           setStatus(getInvalidMoveReason(selectedSquare as Square, square));
           setSelectedSquare(null);
@@ -168,6 +210,15 @@ const ChessMobileGame: React.FC<{ white: Player; black: Player }> = ({
       }
     }
   };
+  useEffect(() => {
+    if (gameLoading) {
+      console.log("gameloading");
+      return;
+    }
+    console.log(capturedPieces);
+
+    saveCapturedPieces({ id: gameId, capturedPieces });
+  }, [capturedPieces]);
 
   const getInvalidMoveReason = (from: Square, to: Square): string => {
     const tempChess = new Chess(chess.fen());
@@ -397,4 +448,4 @@ const ChessSquare: React.FC<{
   );
 };
 
-export default ChessMobileGame;
+export default ChessGame;
