@@ -17,6 +17,7 @@ import {
 
 export default ({ onStatusChange }) => {
   const [game, setGame] = useState(new Chess());
+  const [gameStatus, setGameStatus] = useState({});
   const [availableMoves, setAvailableMoves] = useState([]);
   const [selectedSquare, setSelectedSquare] = useState("");
   const [rightClickedSquares, setRightClickedSquares] = useState([]);
@@ -38,6 +39,8 @@ export default ({ onStatusChange }) => {
   }
 
   function onSquareClick(square) {
+    if (gameStatus.isGameOver) return;
+
     // Toggle and highlight possible moves. quit and return the function if setting toggle state to true
     if (highlightAvailableMoves(square)) {
       return;
@@ -50,12 +53,13 @@ export default ({ onStatusChange }) => {
     // Check for promotion
     if (nextMoves.some((move) => move.promotion)) {
       setPromotionMoves(nextMoves);
-      onStatusChange?.({
-        ...getGameStatus(),
-        message: `${
-          game.turn() === "w" ? "White" : "Black"
-        }'s pawn has reached the last rank! Promote to continue.`,
-      });
+      onStatusChange?.(
+        getGameStatus(
+          `${
+            game.turn() === "w" ? "White" : "Black"
+          }'s pawn has reached the last rank! Promote to continue.`
+        )
+      );
       return;
     }
 
@@ -86,7 +90,7 @@ export default ({ onStatusChange }) => {
     });
   }
 
-  function validateStatus(squares) {
+  function onPositionChange(squares) {
     // Check for stalemate, check, checkmate, whose turn...
     const currentPlayerKing = Object.entries(squares).find(
       ([_, piece]) => piece == game.turn() + "K"
@@ -99,55 +103,58 @@ export default ({ onStatusChange }) => {
       });
     } else setCheckOrStale({});
 
-    console.log(game.history({ verbose: true }));
     onStatusChange?.(getGameStatus());
   }
 
-  function getGameStatus() {
+  function getGameStatus(customMessage) {
     let status = {
-      gameOver: true,
-      captured: game
-        .history({ verbose: true })
-        .filter((moves) => moves.captured)
-        .map((moves) => (moves.color == "w" ? "b" : "w") + moves.captured),
+      isGameOver: true,
+      history: game.history({ verbose: true }),
+      gameState: game.isCheckmate()
+        ? "checkmate"
+        : game.isStalemate()
+        ? "stalemate"
+        : game.isInsufficientMaterial()
+        ? "insufficient material"
+        : game.isThreefoldRepetition()
+        ? "threefold repetition"
+        : game.isDraw()
+        ? "50-move rule"
+        : "normal",
     };
 
-    if (!game.isGameOver()) {
-      return {
-        ...status,
-        gameOver: false,
-        message: `${game.turn() === "w" ? "White" : "Black"}'s move`,
-      };
-    }
+    const currentPlayer = game.turn() == "w" ? "White" : "Black";
 
-    if (game.isCheckmate()) {
-      status.gameOverMethod = "Checkmate";
-      status.winner = game.turn();
-      status.message = `${
-        game.turn() == "w" ? "White" : "Black"
-      } wins by Checkmate`;
-    } else if (game.isDraw()) {
-      status.draw = true;
-
-      if (game.isStalemate()) {
+    switch (status.gameState) {
+      case "checkmate":
+        status.message = `${currentPlayer} wins by Checkmate`;
+        status.winner = game.turn();
+        break;
+      case "stalemate":
         status.message =
           "The game is a draw by Stalemate. Neither player can make a valid move.";
-        status.gameOverMethod = "Stalemate";
-      } else if (game.isInsufficientMaterial()) {
+        break;
+      case "insufficient material":
         status.message =
           "The game is a draw due to Insufficient Material. Neither side can force a checkmate.";
-        status.gameOverMethod = "Insufficient Material";
-      } else if (game.isThreefoldRepetition()) {
+        break;
+      case "threefold repetition":
         status.message =
           "The game is a draw by threefold repetition. The same position has occurred three times, leading to an automatic draw.";
-        status.gameOverMethod = "Threefold Repetition";
-      } else {
+        break;
+      case "50-move rule":
         status.message =
           "The game is a draw by the 50-Move Rule. 50 moves passed without a pawn move or capture.";
-        status.gameOverMethod = "50 Move Rule";
-      }
+        break;
+      default:
+        status.isGameOver = false;
+        status.message = `${currentPlayer}'s move`;
     }
 
+    if (customMessage) status.message = customMessage;
+
+    // Set game status state whenever we request for the game status
+    setGameStatus(status);
     return status;
   }
 
@@ -160,7 +167,7 @@ export default ({ onStatusChange }) => {
         arePiecesDraggable={false}
         onSquareClick={onSquareClick}
         onSquareRightClick={onSquareRightClick}
-        getPositionObject={validateStatus}
+        getPositionObject={onPositionChange}
         customBoardStyle={{
           borderRadius: "4px",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
@@ -179,10 +186,7 @@ export default ({ onStatusChange }) => {
             ? staleStyles
             : checkStyles,
           ...mergeStyles(
-            [
-              game.history({ verbose: true }).at(-1)?.from,
-              game.history({ verbose: true }).at(-1)?.to,
-            ],
+            [gameStatus.history?.at(-1)?.from, gameStatus.history?.at(-1)?.to],
             historyStyles
           ),
           ...mergeStyles([...rightClickedSquares.values()], markedStyles),

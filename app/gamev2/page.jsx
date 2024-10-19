@@ -8,14 +8,24 @@ const GameV2 = () => {
     <>
       <Chessgame onStatusChange={setStatus} />
       <div className="all-status-props text-center">
-        {Object.keys(status).map((prop) => (
-          <p>
-            <strong>{prop}</strong>:{" "}
-            {Array.isArray(status[prop])
-              ? status[prop].join(", ")
-              : status[prop] || "false"}
-          </p>
-        ))}
+        {Object.keys(status).map((prop) => {
+          let value = status[prop] || "false";
+          if (prop == "history") value = value.map((move) => move.lan);
+          if (Array.isArray(value)) value = value.join(", ");
+
+          return (
+            <p>
+              <strong>{prop}</strong>: {value}
+            </p>
+          );
+        })}
+
+        <p>
+          <strong>Captured</strong>:{" "}
+          {status.history
+            ?.filter((moves) => moves.captured)
+            .map((moves) => (moves.color == "w" ? "b" : "w") + moves.captured)}
+        </p>
       </div>
     </>
   );
