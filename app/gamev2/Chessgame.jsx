@@ -1,11 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import pieces from "./pieces";
 
 import {
-  styles as mergeStyles,
+  mergeStyles,
   grayedOutStyles,
   highlightedStyles,
   highlightedCapturedStyles,
@@ -16,7 +16,7 @@ import {
   staleStyles,
 } from "./square-styles";
 
-export default ({ onStatusChange }) => {
+export default ({ onStatusChange, customGameState }) => {
   const [game, setGame] = useState(new Chess());
   const [gameStatus, setGameStatus] = useState({});
   const [availableMoves, setAvailableMoves] = useState([]);
@@ -39,7 +39,7 @@ export default ({ onStatusChange }) => {
   }
 
   function onSquareClick(square) {
-    if (gameStatus.isGameOver) return;
+    if (gameStatus.gameOver) return;
 
     // Toggle and highlight possible moves. quit and return the function if setting toggle state to true
     if (highlightAvailableMoves(square)) {
@@ -89,7 +89,7 @@ export default ({ onStatusChange }) => {
     const currentPlayer = game.turn() == "w" ? "White" : "Black";
 
     let status = {
-      isGameOver: true,
+      gameOver: true,
       history: game.history({ verbose: true }),
       gameState: game.isCheckmate()
         ? "checkmate"
@@ -136,7 +136,7 @@ export default ({ onStatusChange }) => {
         status.message = `${currentPlayer}'s pawn has reached the last rank! Promote to continue.`;
         break;
       default:
-        status.isGameOver = false;
+        status.gameOver = false;
         status.message = `${currentPlayer}'s move`;
     }
 
@@ -148,12 +148,19 @@ export default ({ onStatusChange }) => {
   }
 
   function renderPieceCapturedBy(color) {
+    const capturedPieces = game
+      .history({ verbose: true })
+      ?.filter((move) => move.captured && move.color == color);
+
     return (
-      <div className="captured-container w-full flex justify-center items-center">
-        {game
-          .history({ verbose: true })
-          ?.filter((move) => move.captured && move.color == color)
-          .map((move) => pieces[(color == "w" ? "b" : "w") + move.captured])}
+      <div className="captured-container w-full bg-slate-500/70 rounded shadow-lg my-2 mx-auto flex flex-wrap justify-center items-center">
+        {capturedPieces.map(
+          (move) => pieces[(color == "w" ? "b" : "w") + move.captured]
+        )}
+
+        {capturedPieces.length == 0 && (
+          <p className="text-sm p-2">Captured pieces will appear here.</p>
+        )}
       </div>
     );
   }
@@ -163,7 +170,7 @@ export default ({ onStatusChange }) => {
     (square) => square?.type == "k" && square?.color == game.turn()
   );
   return (
-    <div className="w-[500px] mx-auto">
+    <div className="max-w-[500px] mx-auto">
       {renderPieceCapturedBy("w")}
 
       <Chessboard
@@ -206,6 +213,12 @@ export default ({ onStatusChange }) => {
               .filter((move) => move.captured)
               .map((move) => move.to),
             highlightedCapturedStyles
+          ),
+          ...mergeStyles(
+            gameStatus.gameOver
+              ? gameBoard.map((square) => square?.square)
+              : [],
+            grayedOutStyles
           ),
         }}
         onPromotionPieceSelect={onPromotionPieceSelect}

@@ -38,7 +38,7 @@ export const staleStyles = {
     )`,
 };
 
-export const styles = (selectors, ...styles) => {
+export const mergeStyles = (selectors, ...styles) => {
   const mergedStyles = {};
 
   selectors.forEach((selector) => {
