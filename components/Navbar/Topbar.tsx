@@ -25,7 +25,7 @@ const Topbar = () => {
       className="
               w-full 
               h-12 
-              fixed
+              sticky
               top-0
               flex
               px-5
