@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Chess, Square } from "chess.js";
+import { useState, useEffect } from "react";
+import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
+import pieces from "./pieces";
 
 import {
   styles as mergeStyles,
@@ -22,7 +23,6 @@ export default ({ onStatusChange }) => {
   const [selectedSquare, setSelectedSquare] = useState("");
   const [rightClickedSquares, setRightClickedSquares] = useState([]);
   const [promotionMoves, setPromotionMoves] = useState([]);
-  const [checkOrStale, setCheckOrStale] = useState({});
 
   function highlightAvailableMoves(square) {
     setRightClickedSquares([]);
@@ -53,13 +53,7 @@ export default ({ onStatusChange }) => {
     // Check for promotion
     if (nextMoves.some((move) => move.promotion)) {
       setPromotionMoves(nextMoves);
-      onStatusChange?.(
-        getGameStatus(
-          `${
-            game.turn() === "w" ? "White" : "Black"
-          }'s pawn has reached the last rank! Promote to continue.`
-        )
-      );
+      handleGameStatusUpdate();
       return;
     }
 
@@ -90,28 +84,17 @@ export default ({ onStatusChange }) => {
     });
   }
 
-  function onPositionChange(squares) {
-    // Check for stalemate, check, checkmate, whose turn...
-    const currentPlayerKing = Object.entries(squares).find(
-      ([_, piece]) => piece == game.turn() + "K"
-    )[0];
+  function handleGameStatusUpdate() {
+    const previousPlayer = game.turn() == "w" ? "Black" : "White";
+    const currentPlayer = game.turn() == "w" ? "White" : "Black";
 
-    if (game.isStalemate() || game.inCheck()) {
-      setCheckOrStale({
-        square: currentPlayerKing,
-        isStale: game.isStalemate(),
-      });
-    } else setCheckOrStale({});
-
-    onStatusChange?.(getGameStatus());
-  }
-
-  function getGameStatus(customMessage) {
     let status = {
       isGameOver: true,
       history: game.history({ verbose: true }),
       gameState: game.isCheckmate()
         ? "checkmate"
+        : game.inCheck()
+        ? "in check"
         : game.isStalemate()
         ? "stalemate"
         : game.isInsufficientMaterial()
@@ -120,15 +103,18 @@ export default ({ onStatusChange }) => {
         ? "threefold repetition"
         : game.isDraw()
         ? "50-move rule"
+        : promotionMoves.length > 0
+        ? `promote`
         : "normal",
     };
 
-    const currentPlayer = game.turn() == "w" ? "White" : "Black";
-
     switch (status.gameState) {
       case "checkmate":
-        status.message = `${currentPlayer} wins by Checkmate`;
+        status.message = `${previousPlayer} wins by Checkmate`;
         status.winner = game.turn();
+        break;
+      case "in check":
+        status.message = `${currentPlayer} is in check. ${currentPlayer}'s move`;
         break;
       case "stalemate":
         status.message =
@@ -146,45 +132,65 @@ export default ({ onStatusChange }) => {
         status.message =
           "The game is a draw by the 50-Move Rule. 50 moves passed without a pawn move or capture.";
         break;
+      case "promote":
+        status.message = `${currentPlayer}'s pawn has reached the last rank! Promote to continue.`;
+        break;
       default:
         status.isGameOver = false;
         status.message = `${currentPlayer}'s move`;
     }
 
-    if (customMessage) status.message = customMessage;
-
     // Set game status state whenever we request for the game status
     setGameStatus(status);
+    // Call onStatusChange prop function with the status if it exists
+    onStatusChange?.(status);
     return status;
   }
 
+  function renderPieceCapturedBy(color) {
+    return (
+      <div className="captured-container w-full flex justify-center items-center">
+        {game
+          .history({ verbose: true })
+          ?.filter((move) => move.captured && move.color == color)
+          .map((move) => pieces[(color == "w" ? "b" : "w") + move.captured])}
+      </div>
+    );
+  }
+
+  const gameBoard = game.board().flat();
+  const currentPlayerKing = gameBoard.find(
+    (square) => square?.type == "k" && square?.color == game.turn()
+  );
   return (
-    <div>
+    <div className="w-[500px] mx-auto">
+      {renderPieceCapturedBy("w")}
+
       <Chessboard
-        id="ClickToMove"
-        boardWidth={460}
+        id="chessboard"
         position={game.fen()}
         arePiecesDraggable={false}
         onSquareClick={onSquareClick}
         onSquareRightClick={onSquareRightClick}
-        getPositionObject={onPositionChange}
+        getPositionObject={handleGameStatusUpdate}
         customBoardStyle={{
           borderRadius: "4px",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
-          margin: "auto",
         }}
         customSquareStyles={{
           ...mergeStyles(
-            game
-              .board()
-              .flat()
+            gameBoard
               .filter((square) => square && square.color != game.turn())
               .map((square) => square.square),
             grayedOutStyles
           ),
-          [checkOrStale.square]: checkOrStale.isStale
-            ? staleStyles
-            : checkStyles,
+          [currentPlayerKing.square]:
+            gameStatus.gameState == "checkmate" ||
+            gameStatus.gameState == "in check"
+              ? checkStyles
+              : gameStatus.gameState == "stalemate"
+              ? staleStyles
+              : {},
           ...mergeStyles(
             [gameStatus.history?.at(-1)?.from, gameStatus.history?.at(-1)?.to],
             historyStyles
@@ -204,9 +210,10 @@ export default ({ onStatusChange }) => {
         }}
         onPromotionPieceSelect={onPromotionPieceSelect}
         promotionToSquare="d5"
-        // promotionDialogVariant="modal"
+        promotionDialogVariant="modal"
         showPromotionDialog={promotionMoves.length > 0}
       />
+      {renderPieceCapturedBy("b")}
     </div>
   );
 };

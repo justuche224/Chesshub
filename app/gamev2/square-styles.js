@@ -20,12 +20,22 @@ export const historyStyles = {
   backgroundColor: "rgba(255, 255, 0, 0.2)",
 };
 export const checkStyles = {
-  backgroundColor:
-    "repeating-linear-gradient(45deg, hsl(0, 0%, 0%), hsl(0, 0%, 0%) 10px, hsl(0, 0%, 0%) 10px, hsl(0, 0%, 0%) 20px)",
+  backgroundImage: `repeating-linear-gradient(
+      45deg,
+      hsla(10, 70%, 50%, 0.7),
+      hsla(10, 70%, 50%, 0.7) 10px,
+      hsla(20, 70%, 50%, 0.7) 10px,
+      hsla(20, 70%, 50%, 0.7) 20px
+    )`,
 };
 export const staleStyles = {
-  backgroundColor:
-    "repeating-linear-gradient(45deg, hsl(0, 0%, 0%), hsl(0, 0%, 0%) 10px, hsl(0, 0%, 0%) 10px, hsl(0, 0%, 0%) 20px)",
+  backgroundImage: `repeating-linear-gradient(
+      45deg,
+      hsla(250, 70%, 50%, 0.7),
+      hsla(250, 70%, 50%, 0.7) 10px,
+      hsla(270, 70%, 50%, 0.7) 10px,
+      hsla(270, 70%, 50%, 0.7) 20px
+    )`,
 };
 
 export const styles = (selectors, ...styles) => {

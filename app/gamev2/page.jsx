@@ -10,11 +10,12 @@ const GameV2 = () => {
       <div className="all-status-props text-center">
         {Object.keys(status).map((prop) => {
           let value = status[prop] || "false";
+          if (value === true) value = "true";
           if (prop == "history") value = value.map((move) => move.lan);
           if (Array.isArray(value)) value = value.join(", ");
 
           return (
-            <p>
+            <p key={prop + value}>
               <strong>{prop}</strong>: {value}
             </p>
           );
