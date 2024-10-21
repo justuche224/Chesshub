@@ -26,8 +26,6 @@ export default ({
   player2Id,
   currentPlayerId,
 }) => {
-  // console.log(initialGame.fen);
-
   const [game, setGame] = useState(new Chess(initialGame.fen));
   const [gameStatus, setGameStatus] = useState({});
   const [availableMoves, setAvailableMoves] = useState([]);
@@ -37,10 +35,6 @@ export default ({
   const [playerColor, setPlayerColor] = useState(null);
 
   const lastMove = useRef(null);
-
-  // useEffect(() => {
-  //   game.load(initialGame.fen);
-  // }, [initialGame.fen]);
 
   useEffect(() => {
     if (!currentPlayerId || !player1Id || !player2Id) return;

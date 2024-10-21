@@ -19,7 +19,7 @@ export default auth((req) => {
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
   if (pathname === "/") {
-    return Response.redirect(new URL("/dashboard", nextUrl));
+    return Response.redirect(new URL("/game", nextUrl));
   }
 
   if (isApiAuthRoute) {

@@ -19,7 +19,7 @@ export const Header = ({ label }: { label: string }) => {
           height={44}
           alt="loo"
         />
-        <span>UNICONNECT</span>
+        <span>CHESSHUB</span>
       </h1>
       <p className=" text-muted-foreground text-sm">{label}</p>
     </div>
