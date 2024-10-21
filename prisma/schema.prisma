@@ -61,15 +61,31 @@ model PasswordResetToken {
 }
 
 model Game {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  whitePlayerId  String   @db.ObjectId
-  whitePlayer    User     @relation("whitePlayer", fields: [whitePlayerId], references: [id])
-  blackPlayerId  String   @db.ObjectId
-  blackPlayer    User     @relation("blackPlayer", fields: [blackPlayerId], references: [id])
-  fen            String // FEN string to represent board state
-  moveHistory    String[] // Array of moves (PGN format)
-  capturedPieces Json
-  status         String // Game status ("ongoing", "checkmate", "draw", etc.)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  fen           String // FEN string to represent board state
+  status        String // Game status ("ongoing", "checkmate", "draw", etc.)
+  whitePlayerId String   @db.ObjectId
+  whitePlayer   User     @relation("whitePlayer", fields: [whitePlayerId], references: [id])
+  blackPlayerId String   @db.ObjectId
+  blackPlayer   User     @relation("blackPlayer", fields: [blackPlayerId], references: [id])
+  currentPlayer String
+  moves         Move[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Move {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  gameId    String   @db.ObjectId
+  game      Game     @relation(fields: [gameId], references: [id])
+  playerId  String   @db.ObjectId
+  san       String
+  from      String
+  to        String
+  piece     String
+  color     String
+  flags     String
+  before    String
+  after     String
+  createdAt DateTime @default(now())
 }

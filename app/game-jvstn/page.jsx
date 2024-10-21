@@ -1,6 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Chessgame from "./Chessgame";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { toast } from "sonner";
 
 const storedState = [
   {
@@ -62,9 +64,42 @@ const storedState = [
 ];
 const GameV2 = () => {
   const [status, setStatus] = useState({});
+  const player1Id = "670fea48a3130c7e6e62f077";
+  const player2Id = "671525dce39ed1b85f28d99e";
+  const currentPlayerId = useCurrentUser();
+
+  // useEffect(() => {
+  //   async function newGame() {
+  //     try {
+  //       const response = await fetch(`/api/games`, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ player1Id, player2Id }),
+  //       });
+
+  //       if (!response.ok) {
+  //         const error = await response.text();
+  //         toast.error(`create failed`);
+  //       }
+  //       toast.success("game created");
+  //     } catch (error) {
+  //       console.error("Failed to send move:", error);
+  //       toast.error("Network error. Please try again.");
+  //     }
+  //   }
+
+  //   newGame();
+  // }, []);
+
   return (
     <>
-      <Chessgame onStatusChange={setStatus} customGameState={storedState} />
+      <Chessgame
+        onStatusChange={setStatus}
+        customGameState={storedState}
+        player1Id={player1Id}
+        player2Id={player2Id}
+        currentPlayerId={currentPlayerId}
+      />
       <div className="all-status-props text-center">
         {Object.keys(status).map((prop) => {
           let value = status[prop] || "false";

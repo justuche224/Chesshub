@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from "react";
 import { Chess, Square } from "chess.js";
 import { ArrowLeft, Hand, Flag, MessageSquare } from "lucide-react";
-import { Player } from "@/app/game/page";
+import { Player } from "@/app/game-test/page";
 import Image from "next/image";
 import { saveCapturedPieces, saveGame } from "@/lib/saveGame";
 import { loadGame } from "@/lib/loadGame";

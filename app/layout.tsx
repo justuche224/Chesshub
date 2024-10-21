@@ -38,21 +38,7 @@ export default async function RootLayout({
           <NextTopLoader color="red" />
           <Topbar />
           <main>{children}</main>
-          <Toaster
-            position="top-center"
-            closeButton
-            toastOptions={{
-              // unstyled: true,
-              classNames: {
-                toast: "dark:bg-black bg-white",
-                // title: 'text-red-400',
-                // description: 'text-red-400',
-                // actionButton: 'bg-zinc-400',
-                // cancelButton: 'bg-orange-400',
-                // closeButton: 'bg-lime-400',
-              },
-            }}
-          />
+          <Toaster position="top-center" closeButton richColors />
         </SessionProvider>
       </body>
     </html>

@@ -1,7 +1,9 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
+import { pusherClient } from "@/lib/pusher";
 import pieces from "./pieces";
 
 import {
@@ -15,14 +17,71 @@ import {
   checkStyles,
   staleStyles,
 } from "./square-styles";
+import { toast } from "sonner";
 
-export default ({ onStatusChange, customGameState }) => {
+export default ({
+  onStatusChange,
+  customGameState,
+  gameId,
+  player1Id,
+  player2Id,
+  currentPlayerId,
+}) => {
   const [game, setGame] = useState(new Chess());
   const [gameStatus, setGameStatus] = useState({});
   const [availableMoves, setAvailableMoves] = useState([]);
   const [selectedSquare, setSelectedSquare] = useState("");
   const [rightClickedSquares, setRightClickedSquares] = useState([]);
   const [promotionMoves, setPromotionMoves] = useState([]);
+  const [playerColor, setPlayerColor] = useState(null);
+
+  useEffect(() => {
+    if (currentPlayerId === player1Id) {
+      setPlayerColor("w");
+      toast("you are White");
+    } else if (currentPlayerId === player2Id) {
+      toast("you are black");
+      setPlayerColor("b");
+    }
+  }, [currentPlayerId, player1Id, player2Id]);
+
+  useEffect(() => {
+    const channel = pusherClient.subscribe(`game-${gameId}`);
+
+    channel.bind("move", (data) => {
+      const { move, fen } = data;
+      game.move(move);
+      setGame(new Chess(fen));
+      handleGameStatusUpdate();
+    });
+
+    return () => {
+      pusherClient.unsubscribe(`game-${gameId}`);
+    };
+  }, [gameId, game]);
+
+  const sendMoveToServer = async (move) => {
+    if (game.turn() !== playerColor) {
+      toast("It's not your turn!");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/games/${gameId}/move`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ move, playerId: currentPlayerId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        toast(`Move failed: ${error}`);
+      }
+    } catch (error) {
+      console.error("Failed to send move:", error);
+      toast("Network error. Please try again.");
+    }
+  };
 
   function highlightAvailableMoves(square) {
     setRightClickedSquares([]);
@@ -66,6 +125,8 @@ export default ({ onStatusChange, customGameState }) => {
     game.move(move);
     setAvailableMoves([]);
     setSelectedSquare("");
+
+    sendMoveToServer(move);
   }
 
   function onPromotionPieceSelect(piece) {

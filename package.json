@@ -31,6 +31,8 @@
     "next-themes": "^0.3.0",
     "nextjs-toploader": "^3.6.15",
     "nodemailer": "^6.9.15",
+    "pusher": "^5.2.0",
+    "pusher-js": "^8.4.0-rc2",
     "react": "^18",
     "react-chessboard": "^4.7.2",
     "react-dom": "^18",
