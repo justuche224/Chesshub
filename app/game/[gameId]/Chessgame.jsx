@@ -36,6 +36,8 @@ export default ({
 
   const lastMove = useRef(null);
 
+  console.log(initialGame);
+
   useEffect(() => {
     if (!currentPlayerId || !player1Id || !player2Id) return;
 
@@ -241,7 +243,7 @@ export default ({
   );
   return (
     <div className="max-w-[500px] mx-auto">
-      {renderPieceCapturedBy("w")}
+      {renderPieceCapturedBy(playerColor)}
 
       <Chessboard
         id="chessboard"
@@ -250,6 +252,7 @@ export default ({
         onSquareClick={onSquareClick}
         onSquareRightClick={onSquareRightClick}
         getPositionObject={handleGameStatusUpdate}
+        boardOrientation={playerColor == "w" ? "white" : "black"}
         customBoardStyle={{
           borderRadius: "4px",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
@@ -296,7 +299,7 @@ export default ({
         promotionDialogVariant="modal"
         showPromotionDialog={promotionMoves.length > 0}
       />
-      {renderPieceCapturedBy("b")}
+      {renderPieceCapturedBy(playerColor == "w" ? "b" : "w")}
     </div>
   );
 };
