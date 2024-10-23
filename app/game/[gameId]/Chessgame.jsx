@@ -19,12 +19,13 @@ import {
 } from "./square-styles";
 import { toast } from "sonner";
 
+// white, black and current player should be an object with properties: id, username and color
 export default ({
   onStatusChange,
   initialGame,
-  player1Id,
-  player2Id,
-  currentPlayerId,
+  whitePlayer,
+  blackPlayer,
+  currentPlayer,
 }) => {
   const [game, setGame] = useState(new Chess(initialGame.fen));
   const [gameStatus, setGameStatus] = useState({});
@@ -32,21 +33,14 @@ export default ({
   const [selectedSquare, setSelectedSquare] = useState("");
   const [rightClickedSquares, setRightClickedSquares] = useState([]);
   const [promotionMoves, setPromotionMoves] = useState([]);
-  const [playerColor, setPlayerColor] = useState(null);
 
   const lastMove = useRef(null);
 
   useEffect(() => {
-    if (!currentPlayerId || !player1Id || !player2Id) return;
+    if (!whitePlayer.id || !blackPlayer.id) return;
 
-    if (currentPlayerId === player1Id) {
-      setPlayerColor("w");
-      toast.info("you are White");
-    } else if (currentPlayerId === player2Id) {
-      setPlayerColor("b");
-      toast.info("you are Black");
-    }
-  }, [currentPlayerId, player1Id, player2Id]);
+    toast.info(`You are ${currentPlayer.color === "w" ? "White" : "Black"}`);
+  }, [currentPlayer, whitePlayer, blackPlayer]);
 
   useEffect(() => {
     const channel = pusherClient.subscribe(`game-${initialGame.id}`);
@@ -72,7 +66,7 @@ export default ({
       const response = await fetch(`/api/games/${initialGame.id}/move`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ move, playerId: currentPlayerId }),
+        body: JSON.stringify({ move, playerId: currentPlayer.id }),
       });
 
       if (!response.ok) {
@@ -103,7 +97,8 @@ export default ({
 
   function onSquareClick(square) {
     if (gameStatus.gameOver) return;
-    if (game.turn() !== playerColor) {
+
+    if (game.turn() !== currentPlayer.color) {
       toast.error("It's not your turn!");
       return;
     }
@@ -229,7 +224,9 @@ export default ({
         )}
 
         {capturedPieces.length == 0 && (
-          <p className="text-sm p-2">Captured pieces will appear here.</p>
+          <p className="text-sm p-2">
+            Captured {color == "w" ? "black" : "white"} pieces will appear here.
+          </p>
         )}
       </div>
     );
@@ -240,8 +237,8 @@ export default ({
     (square) => square?.type == "k" && square?.color == game.turn()
   );
   return (
-    <div className="max-w-[500px] mx-auto">
-      {renderPieceCapturedBy("w")}
+    <div className="mx-auto">
+      {renderPieceCapturedBy(currentPlayer.color)}
 
       <Chessboard
         id="chessboard"
@@ -250,6 +247,7 @@ export default ({
         onSquareClick={onSquareClick}
         onSquareRightClick={onSquareRightClick}
         getPositionObject={handleGameStatusUpdate}
+        boardOrientation={currentPlayer.color == "w" ? "white" : "black"}
         customBoardStyle={{
           borderRadius: "4px",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
@@ -296,7 +294,7 @@ export default ({
         promotionDialogVariant="modal"
         showPromotionDialog={promotionMoves.length > 0}
       />
-      {renderPieceCapturedBy("b")}
+      {renderPieceCapturedBy(currentPlayer.color == "w" ? "b" : "w")}
     </div>
   );
 };

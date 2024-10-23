@@ -36,11 +36,23 @@ const page = async ({ params }) => {
     );
   }
 
+  const whitePlayer = await db.user.findUnique({
+    where: { id: game.whitePlayerId },
+    select: { id: true, username: true },
+  });
+  const blackPlayer = await db.user.findUnique({
+    where: { id: game.blackPlayerId },
+    select: { id: true, username: true },
+  });
+
+  whitePlayer.color = "w";
+  blackPlayer.color = "b";
+
   return (
     <GamePage
-      player1Id={game.whitePlayerId}
-      player2Id={game.blackPlayerId}
-      currentPlayerId={player.id}
+      whitePlayer={whitePlayer}
+      blackPlayer={blackPlayer}
+      currentPlayer={player.id == whitePlayer.id ? whitePlayer : blackPlayer}
       initialGame={game}
     />
   );
