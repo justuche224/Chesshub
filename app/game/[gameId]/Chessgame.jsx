@@ -231,7 +231,9 @@ export default ({
         )}
 
         {capturedPieces.length == 0 && (
-          <p className="text-sm p-2">Captured pieces will appear here.</p>
+          <p className="text-sm p-2">
+            Captured {color == "w" ? "black" : "white"} pieces will appear here.
+          </p>
         )}
       </div>
     );
@@ -242,7 +244,7 @@ export default ({
     (square) => square?.type == "k" && square?.color == game.turn()
   );
   return (
-    <div className="max-w-[500px] mx-auto">
+    <div className="min-w-[460px] mx-auto">
       {renderPieceCapturedBy(playerColor)}
 
       <Chessboard

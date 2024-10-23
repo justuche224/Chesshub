@@ -38,8 +38,8 @@ const page = async ({ params }) => {
 
   return (
     <GamePage
-      player1Id={game.whitePlayerId}
-      player2Id={game.blackPlayerId}
+      whitePlayerId={game.whitePlayerId}
+      blackPlayerId={game.blackPlayerId}
       currentPlayerId={player.id}
       initialGame={game}
     />

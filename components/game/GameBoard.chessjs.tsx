@@ -5,8 +5,8 @@ import { Chess, Square } from "chess.js";
 import { ArrowLeft, Hand, Flag, MessageSquare } from "lucide-react";
 import { Player } from "@/app/game-test/page";
 import Image from "next/image";
-import { saveCapturedPieces, saveGame } from "@/lib/saveGame";
-import { loadGame } from "@/lib/loadGame";
+// import { saveCapturedPieces, saveGame } from "@/lib/saveGame";
+// import { loadGame } from "@/lib/loadGame";
 
 type ChessPiece =
   | "r"
