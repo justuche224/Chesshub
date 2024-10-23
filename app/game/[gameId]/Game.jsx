@@ -2,60 +2,48 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ArrowLeft, Hand, Flag, MessageSquare, User } from "lucide-react";
-import { Player } from "@/app/game-test/page";
-import Chessgame from "./Chessgame";
 import { cn } from "@/lib/utils";
-const GamePage = ({
-  whitePlayerId,
-  blackPlayerId,
-  currentPlayerId,
-  initialGame,
-}) => {
+import Chessgame from "./Chessgame";
+
+const GamePage = ({ whitePlayer, blackPlayer, currentPlayer, initialGame }) => {
   const [status, setStatus] = useState({});
 
-  const white = { id: whitePlayerId };
-  const black = { id: blackPlayerId };
-
-  console.log(status, whitePlayerId, blackPlayerId, initialGame);
-
   return (
-    <div className="bg-wrapper bg-gradient-to-tl from-slate-900 to-gray-600">
-      <div className="container text-white min-h-screen p-4 flex flex-col md:flex-row md:justify-around md:items-center md:gap-8">
-        <div className="md:w-1/3 lg:w-1/4 xl:w-1/5 self-stretch flex md:flex-col">
-          <ArrowLeft className="w-6 h-6 md:w-8 md:h-8" />
-
-          <div className="flex justify-around mb-4 md:flex-col grow md:gap-4">
+    <div className="bg-wrapper bg-gradient-to-tl from-slate-900 to-gray-600 w-full h-full">
+      <ArrowLeft className="w-14 h-14 md:w-16 md:h-16 p-4 text-white" />
+      <div className="container text-white min-h-screen flex flex-col md:flex-row md:justify-around md:items-center md:gap-8">
+        <div className="md:w-1/3 lg:w-1/4 xl:w-1/5 self-stretch flex md:flex-col gap-4">
+          <div className="flex sm:flex-row-reverse flex-col md:flex-col justify-around mb-4 p-4 grow md:gap-4">
             <PlayerInfo
-              player={currentPlayerId === whitePlayerId ? black : white}
+              player={currentPlayer === whitePlayer ? blackPlayer : whitePlayer}
+              currentPlayer={currentPlayer}
             />
 
-            <div className="mt-4 md:mt-8">
-              <div className="text-center md:text-left">
-                <p>
-                  <strong>Game Status: </strong>
-                  <br />
-                  {status.message}
-                </p>
-              </div>
-              <div className="mt-4 flex justify-between md:flex-col md:gap-4"></div>
+            <div className="text-center self-center my-4 md:text-left">
+              <p>
+                <strong>Game Status: </strong>
+                <br />
+                {status.message}
+              </p>
             </div>
 
             <PlayerInfo
-              player={currentPlayerId === whitePlayerId ? white : black}
+              player={currentPlayer === whitePlayer ? whitePlayer : blackPlayer}
+              currentPlayer={currentPlayer}
             />
           </div>
         </div>
 
-        <div className="">
+        <div className="max-w-screen w-screen">
           <Chessgame
             onStatusChange={setStatus}
-            player1Id={whitePlayerId}
-            player2Id={blackPlayerId}
+            whitePlayer={whitePlayer}
+            blackPlayer={blackPlayer}
             initialGame={initialGame}
-            currentPlayerId={currentPlayerId}
+            currentPlayer={currentPlayer}
           />
         </div>
-        <div className="flex justify-around mt-4 md:mt-8 md:flex-col md:justify-between md:gap-7">
+        <div className="flex justify-around mt-4 p-4 md:mt-8 md:flex-col md:justify-between md:gap-7">
           <ActionButton icon={<Hand className="w-6 h-6" />} text="Draw" />
           <ActionButton icon={<Flag className="w-6 h-6" />} text="Resign" />
           <ActionButton
@@ -67,7 +55,7 @@ const GamePage = ({
     </div>
   );
 };
-const PlayerInfo = ({ player, className = "" }) => {
+const PlayerInfo = ({ player, currentPlayer }) => {
   const [rand, setRand] = useState(Math.random);
 
   const defaultImage = (
@@ -82,8 +70,10 @@ const PlayerInfo = ({ player, className = "" }) => {
   return (
     <div
       className={cn(
-        "flex flex-col items-center md:flex-row md:items-center md:gap-4",
-        className
+        "flex flex-col items-center md:flex-row md:items-center md:gap-4 px-4 py-2 rounded-lg shadow-inset",
+        currentPlayer.color === player.color
+          ? " ring ring-green-500/50 bg-green-500/20 shadow-green-500"
+          : "ring ring-red-500/50 bg-red-500/20 shadow-red-500"
       )}
     >
       {player.image ? (
@@ -99,11 +89,13 @@ const PlayerInfo = ({ player, className = "" }) => {
       ) : (
         defaultImage
       )}
-      <div className="md:flex md:flex-col">
+      <div className="flex flex-col items-center md:items-stretch">
         <span className="text-sm mt-1 md:text-base md:mt-0">
-          {player.name || `user${player.id}`}
+          @{player.username || `user${player.id}`}
         </span>
-        <span className="text-xs opacity-70 md:text-sm"></span>
+        <span className="text-xs font-bold opacity-70 md:text-sm">
+          {player.color === "w" ? "White" : "Black"}
+        </span>
       </div>
     </div>
   );
