@@ -7,47 +7,71 @@ import Chessgame from "./Chessgame";
 
 const GamePage = ({ whitePlayer, blackPlayer, currentPlayer, initialGame }) => {
   const [status, setStatus] = useState({});
+  const [boardWidth, setBoardWidth] = useState(0);
+
+  // Calculate optimal board size based on viewport
+  useEffect(() => {
+    const calculateBoardSize = () => {
+      const vh = window.innerHeight;
+      const vw = window.innerWidth;
+
+      // Calculate maximum available height (accounting for padding and other elements)
+      const maxHeight = vh - 160; // Reserve space for headers and captured pieces
+      // Calculate maximum available width (accounting for sidebars on larger screens)
+      const maxWidth = vw > 768 ? vw - 400 : vw - 32; // Adjust for MD breakpoint
+
+      // Use the smaller of the two dimensions to ensure board fits
+      const optimalSize = Math.min(maxHeight, maxWidth);
+      setBoardWidth(optimalSize);
+    };
+
+    calculateBoardSize();
+    window.addEventListener("resize", calculateBoardSize);
+    return () => window.removeEventListener("resize", calculateBoardSize);
+  }, []);
 
   return (
-    <div className="bg-wrapper bg-gradient-to-tl from-slate-900 to-gray-600 w-full h-full">
-      <ArrowLeft className="w-14 h-14 md:w-16 md:h-16 p-4 text-white" />
-      <div className="container text-white min-h-screen flex flex-col md:flex-row md:justify-around md:items-center md:gap-8">
-        <div className="md:w-1/3 lg:w-1/4 xl:w-1/5 self-stretch flex md:flex-col gap-4">
-          <div className="flex sm:flex-row-reverse flex-col md:flex-col justify-around mb-4 p-4 grow md:gap-4">
-            <PlayerInfo
-              player={currentPlayer === whitePlayer ? blackPlayer : whitePlayer}
-              currentPlayer={currentPlayer}
-            />
+    <div className="bg-gradient-to-tl from-slate-900 to-gray-600 min-h-screen">
+      <div className="flex items-center p-2">
+        <ArrowLeft className="w-10 h-10 text-white" />
+      </div>
 
-            <div className="text-center self-center my-4 md:text-left">
-              <p>
-                <strong>Game Status: </strong>
-                <br />
-                {status.message}
-              </p>
-            </div>
+      <div className="container mx-auto px-4 text-white flex flex-col md:flex-row md:items-center md:gap-4 h-[calc(100vh-4rem)]">
+        {/* Left sidebar */}
+        <div className="md:w-36 lg:w-44 flex flex-row md:flex-col justify-between gap-2 mb-2 md:mb-0">
+          <PlayerInfo
+            player={currentPlayer === whitePlayer ? blackPlayer : whitePlayer}
+            currentPlayer={currentPlayer}
+          />
+          <div className="text-center md:text-left text-sm">
+            <p className="font-semibold">Game Status:</p>
+            <p className="opacity-90">{status.message}</p>
+          </div>
+          <PlayerInfo
+            player={currentPlayer === whitePlayer ? whitePlayer : blackPlayer}
+            currentPlayer={currentPlayer}
+          />
+        </div>
 
-            <PlayerInfo
-              player={currentPlayer === whitePlayer ? whitePlayer : blackPlayer}
+        {/* Chess board container */}
+        <div className="flex-1 flex justify-center items-center">
+          <div style={{ width: boardWidth, maxWidth: "100%" }}>
+            <Chessgame
+              onStatusChange={setStatus}
+              whitePlayer={whitePlayer}
+              blackPlayer={blackPlayer}
+              initialGame={initialGame}
               currentPlayer={currentPlayer}
             />
           </div>
         </div>
 
-        <div className="max-w-screen w-screen">
-          <Chessgame
-            onStatusChange={setStatus}
-            whitePlayer={whitePlayer}
-            blackPlayer={blackPlayer}
-            initialGame={initialGame}
-            currentPlayer={currentPlayer}
-          />
-        </div>
-        <div className="flex justify-around mt-4 p-4 md:mt-8 md:flex-col md:justify-between md:gap-7">
-          <ActionButton icon={<Hand className="w-6 h-6" />} text="Draw" />
-          <ActionButton icon={<Flag className="w-6 h-6" />} text="Resign" />
+        {/* Right sidebar */}
+        <div className="flex md:flex-col justify-center gap-4 mt-2 md:mt-0 md:w-24">
+          <ActionButton icon={<Hand className="w-5 h-5" />} text="Draw" />
+          <ActionButton icon={<Flag className="w-5 h-5" />} text="Resign" />
           <ActionButton
-            icon={<MessageSquare className="w-6 h-6" />}
+            icon={<MessageSquare className="w-5 h-5" />}
             text="Chat"
           />
         </div>
@@ -55,45 +79,42 @@ const GamePage = ({ whitePlayer, blackPlayer, currentPlayer, initialGame }) => {
     </div>
   );
 };
-const PlayerInfo = ({ player, currentPlayer }) => {
-  const [rand, setRand] = useState(Math.random);
 
-  const defaultImage = (
-    <div
-      className={`w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden flex justify-center items-center`}
-      style={{ backgroundColor: `hsl(${rand * 360}, 50%, 40%)` }}
-    >
-      <User className="w-10 h-10" />
-    </div>
-  );
+const PlayerInfo = ({ player, currentPlayer }) => {
+  const [rand] = useState(() => Math.random());
 
   return (
     <div
       className={cn(
-        "flex flex-col items-center md:flex-row md:items-center md:gap-4 px-4 py-2 rounded-lg shadow-inset",
+        "flex items-center gap-2 p-2 rounded-lg shadow-md",
         currentPlayer.color === player.color
-          ? " ring ring-green-500/50 bg-green-500/20 shadow-green-500"
-          : "ring ring-red-500/50 bg-red-500/20 shadow-red-500"
+          ? "ring-1 ring-green-500/50 bg-green-500/20"
+          : "ring-1 ring-red-500/50 bg-red-500/20"
       )}
     >
       {player.image ? (
-        <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gray-300 overflow-hidden">
+        <div className="w-8 h-8 rounded-full overflow-hidden">
           <Image
-            width={48}
-            height={48}
+            width={32}
+            height={32}
             src={player.image}
             alt={player.name}
             className="w-full h-full object-cover"
           />
         </div>
       ) : (
-        defaultImage
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: `hsl(${rand * 360}, 50%, 40%)` }}
+        >
+          <User className="w-6 h-6" />
+        </div>
       )}
-      <div className="flex flex-col items-center md:items-stretch">
-        <span className="text-sm mt-1 md:text-base md:mt-0">
+      <div className="flex flex-col">
+        <span className="text-sm">
           @{player.username || `user${player.id}`}
         </span>
-        <span className="text-xs font-bold opacity-70 md:text-sm">
+        <span className="text-xs opacity-70">
           {player.color === "w" ? "White" : "Black"}
         </span>
       </div>
@@ -102,9 +123,9 @@ const PlayerInfo = ({ player, currentPlayer }) => {
 };
 
 const ActionButton = ({ icon, text }) => (
-  <button className="flex flex-col items-center opacity-70 md:flex-row md:gap-2">
+  <button className="flex flex-col items-center gap-1 opacity-70 hover:opacity-100 transition-opacity">
     {icon}
-    <span className="text-xs mt-1 md:text-sm md:mt-0">{text}</span>
+    <span className="text-xs">{text}</span>
   </button>
 );
 

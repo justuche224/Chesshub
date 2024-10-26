@@ -1,6 +1,4 @@
 import ChessGame from "@/components/game/GameBoard.chessjs";
-import { initializeGame } from "@/lib/initializationGame";
-import { saveGame } from "@/lib/saveGame";
 
 export type Player = {
   id: string;
