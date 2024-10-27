@@ -4,10 +4,13 @@ import Image from "next/image";
 import { ArrowLeft, Hand, Flag, MessageSquare, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Chessgame from "./Chessgame";
+import { useRouter } from "next/navigation";
 
 const GamePage = ({ whitePlayer, blackPlayer, currentPlayer, initialGame }) => {
   const [status, setStatus] = useState({});
   const [boardWidth, setBoardWidth] = useState(0);
+
+  const router = useRouter();
 
   // Calculate optimal board size based on viewport
   useEffect(() => {
@@ -34,7 +37,15 @@ const GamePage = ({ whitePlayer, blackPlayer, currentPlayer, initialGame }) => {
     <div className="h-[100svh]">
       <div className="container mx-auto px-4 text-white flex flex-col md:flex-row md:items-center md:gap-4 h-[calc(100vh-4rem)]">
         {/* Left sidebar */}
-        <div className="md:w-36 lg:w-44 flex flex-row md:flex-col justify-between gap-2 mb-2 md:mb-0">
+        <div className="md:w-36 lg:w-44 flex flex-row md:flex-col justify-between gap-5 mb-2 md:mb-0">
+          <div className="text-center md:text-left text-sm">
+            <button
+              onClick={() => router.push("/game")}
+              className="font-semibold px-2 py-2 dark:bg-gray-700 bg-slate-300 rounded"
+            >
+              <ArrowLeft className="inline" /> Back to games
+            </button>
+          </div>
           <PlayerInfo
             player={currentPlayer === whitePlayer ? blackPlayer : whitePlayer}
             currentPlayer={currentPlayer}
