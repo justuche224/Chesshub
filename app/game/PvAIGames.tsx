@@ -39,6 +39,9 @@ const PvPAiGames = ({ userGamesWithAi }: GameAiHomeProps) => {
               </div>
               <div className="mt-2 text-gray-200">
                 <p>
+                  <strong>Created At:</strong> {game.aiType}
+                </p>
+                <p>
                   <strong>Created At:</strong>{" "}
                   {game.createdAt.toLocaleString("en-US")}
                 </p>
