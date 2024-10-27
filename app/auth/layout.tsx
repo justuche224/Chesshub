@@ -1,16 +1,17 @@
 const Authlayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div
+    <main
       style={{
-        backgroundImage: 'url("/images/pexels-pixabay-256490.jpg")',
+        backgroundImage:
+          'url("/images/black-white-chess-pieces-black-background.jpg")',
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         backgroundSize: "cover",
       }}
-      className="flex items-center justify-center pt-52 h-[100vh] fixed top-0 w-full overflow-auto"
+      className="flex items-center justify-center h-[100svh] fixed top-0 w-full overflow-auto"
     >
       {children}
-    </div>
+    </main>
   );
 };
 

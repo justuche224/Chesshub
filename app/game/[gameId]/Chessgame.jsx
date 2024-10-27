@@ -238,8 +238,6 @@ export default ({
   );
   return (
     <div className="mx-auto">
-      {renderPieceCapturedBy(currentPlayer.color)}
-
       <Chessboard
         id="chessboard"
         position={game.fen()}
@@ -294,7 +292,6 @@ export default ({
         promotionDialogVariant="modal"
         showPromotionDialog={promotionMoves.length > 0}
       />
-      {renderPieceCapturedBy(currentPlayer.color == "w" ? "b" : "w")}
     </div>
   );
 };

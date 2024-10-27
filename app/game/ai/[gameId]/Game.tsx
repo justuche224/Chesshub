@@ -45,17 +45,13 @@ const GamePage = ({
   }, []);
 
   return (
-    <div className="bg-gradient-to-tl from-slate-900 to-gray-600 min-h-screen">
-      <div className="flex items-center p-2">
-        <ArrowLeft className="w-10 h-10 text-white" />
-      </div>
-
+    <div className="h-[100svh]">
       <div className="container mx-auto px-4 text-white flex flex-col md:flex-row md:items-center md:gap-4 h-[calc(100vh-4rem)]">
         {/* Left sidebar */}
         <div className="md:w-36 lg:w-44 flex flex-row md:flex-col justify-between gap-2 mb-2 md:mb-0">
           <PlayerInfo player={player} currentPlayer={currentPlayer} />
           <div className="text-center md:text-left text-sm">
-            <p className="font-semibold">Game Status:</p>
+            {/* <p className="font-semibold">Game Status:</p> */}
             {/*  <p className="opacity-90">{status}</p>*/}
             {/* above code is breaking the game*/}
           </div>
@@ -72,16 +68,6 @@ const GamePage = ({
               currentPlayer={currentPlayer}
             />
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <div className="flex md:flex-col justify-center gap-4 mt-2 md:mt-0 md:w-24">
-          <ActionButton icon={<Hand className="w-5 h-5" />} text="Draw" />
-          <ActionButton icon={<Flag className="w-5 h-5" />} text="Resign" />
-          <ActionButton
-            icon={<MessageSquare className="w-5 h-5" />}
-            text="Chat"
-          />
         </div>
       </div>
     </div>
@@ -134,17 +120,5 @@ const PlayerInfo = ({ player, currentPlayer }: PlayerInfoProps) => {
     </div>
   );
 };
-
-type ActionButtonProps = {
-  icon: React.ReactNode;
-  text: string;
-};
-
-const ActionButton = ({ icon, text }: ActionButtonProps) => (
-  <button className="flex flex-col items-center gap-1 opacity-70 hover:opacity-100 transition-opacity">
-    {icon}
-    <span className="text-xs">{text}</span>
-  </button>
-);
 
 export default GamePage;

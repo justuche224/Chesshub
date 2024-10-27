@@ -31,11 +31,7 @@ const GamePage = ({ whitePlayer, blackPlayer, currentPlayer, initialGame }) => {
   }, []);
 
   return (
-    <div className="bg-gradient-to-tl from-slate-900 to-gray-600 min-h-screen">
-      <div className="flex items-center p-2">
-        <ArrowLeft className="w-10 h-10 text-white" />
-      </div>
-
+    <div className="h-[100svh]">
       <div className="container mx-auto px-4 text-white flex flex-col md:flex-row md:items-center md:gap-4 h-[calc(100vh-4rem)]">
         {/* Left sidebar */}
         <div className="md:w-36 lg:w-44 flex flex-row md:flex-col justify-between gap-2 mb-2 md:mb-0">
@@ -64,16 +60,6 @@ const GamePage = ({ whitePlayer, blackPlayer, currentPlayer, initialGame }) => {
               currentPlayer={currentPlayer}
             />
           </div>
-        </div>
-
-        {/* Right sidebar */}
-        <div className="flex md:flex-col justify-center gap-4 mt-2 md:mt-0 md:w-24">
-          <ActionButton icon={<Hand className="w-5 h-5" />} text="Draw" />
-          <ActionButton icon={<Flag className="w-5 h-5" />} text="Resign" />
-          <ActionButton
-            icon={<MessageSquare className="w-5 h-5" />}
-            text="Chat"
-          />
         </div>
       </div>
     </div>

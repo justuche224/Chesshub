@@ -5,6 +5,7 @@ import { UserWithColor } from "@/types";
 
 const page = async ({ params }: { params: { gameId: string } }) => {
   const user = await currentUser();
+  // console.log(user);
 
   if (!user) {
     return (
@@ -31,7 +32,7 @@ const page = async ({ params }: { params: { gameId: string } }) => {
 
   const player: UserWithColor = {
     id: user.id!!,
-    username: user.name,
+    username: user.username,
     email: user.email,
     image: user.image,
     color: "",

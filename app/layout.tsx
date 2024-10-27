@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { Toaster } from "@/components/ui/sonner";
 import Topbar from "@/components/Navbar/Topbar";
 import NextTopLoader from "nextjs-toploader";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -37,7 +38,14 @@ export default async function RootLayout({
         <SessionProvider session={session}>
           <NextTopLoader color="red" />
           <Topbar />
-          <main>{children}</main>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <main className="pt-5">{children}</main>
+          </ThemeProvider>
           <Toaster position="top-center" closeButton richColors />
         </SessionProvider>
       </body>
