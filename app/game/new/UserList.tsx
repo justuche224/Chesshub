@@ -22,7 +22,11 @@ const UserList = ({ otherUsers, userId }: UserListProps) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ player1Id: userId, player2Id: opponentId }),
+        body: JSON.stringify({
+          player1Id: userId,
+          player2Id: opponentId,
+          gameType: "HUMAN",
+        }),
       });
       if (!res.ok) {
         const error = await res.text();

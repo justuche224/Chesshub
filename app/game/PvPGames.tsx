@@ -22,7 +22,6 @@ const GameHome = ({ userGames }: GameHomeProps) => {
           <Link href={"/game/new"}>New Game</Link>
         </Button>
       </div>
-
       {userGames.length > 0 ? (
         <div className="grid grid-cols-1 gap-6">
           {userGames.map((game) => (

@@ -1,10 +1,5 @@
 import { Chess, Move } from "chess.js";
-
-enum AIType {
-  BasicAI,
-  SmartAI,
-  SmarterAI,
-}
+import { AIType } from "@prisma/client";
 
 type ComputerMoveProp = {
   difficulty: AIType;
@@ -23,7 +18,7 @@ export const computerMove = async ({
     const randomIndex = Math.floor(Math.random() * moves.length);
     const randomMove = moves[randomIndex];
     chess.move(randomMove);
-    console.log("AI's move:", randomMove);
+    // console.log("AI's move:", randomMove);
     return randomMove;
   }
 
@@ -41,7 +36,7 @@ export const computerMove = async ({
 
     const randomMove = moves[Math.floor(Math.random() * moves.length)];
     chess.move(randomMove);
-    console.log("AI's move:", randomMove);
+    // console.log("AI's move:", randomMove);
     return randomMove;
   }
 
@@ -89,7 +84,7 @@ export const computerMove = async ({
 
     if (bestMove) {
       chess.move(bestMove);
-      console.log("AI's smart move:", bestMove);
+      // console.log("AI's smart move:", bestMove);
       return bestMove;
     }
   }
